@@ -53,8 +53,7 @@ time_ago() {
 
 print_dispatch() {
     local item="$1"
-    local home_lat="$2"
-    local home_lng="$3"
+    local search_address="$2"
 
     local incident_type incident_code address city source
     local call_received last_updated distance lat lng
@@ -103,12 +102,13 @@ print_dispatch() {
     if [[ -n "$distance" && "$distance" != "null" ]]; then
         printf "  Distance:         %s miles\n" "$distance"
     fi
-    if [[ -n "$lat" && "$lat" != "null" && -n "$lng" && "$lng" != "null" ]]; then
-        if [[ -n "$home_lat" && -n "$home_lng" ]]; then
-            echo "  Map:              https://www.google.com/maps/dir/$home_lat,$home_lng/$lat,$lng"
-        else
-            echo "  Map:              https://www.google.com/maps?q=$lat,$lng"
-        fi
+    local dispatch_addr="${address}, ${city}, Nashville, TN"
+    local encoded_dispatch=$(echo "$dispatch_addr" | tr -d '\n' | jq -sRr @uri)
+    if [[ -n "$search_address" ]]; then
+        local encoded_search=$(echo "$search_address" | tr -d '\n' | jq -sRr @uri)
+        echo "  Map:              https://www.google.com/maps/dir/$encoded_search/$encoded_dispatch"
+    else
+        echo "  Map:              https://www.google.com/maps/search/$encoded_dispatch"
     fi
     echo ""
 }
@@ -154,7 +154,7 @@ if $list_all; then
 
     for i in $(seq 0 $((count - 1))); do
         item=$(echo "$response" | jq ".dispatches[$i]")
-        print_dispatch "$item"
+        print_dispatch "$item" ""
     done
     echo "═══════════════════════════════════════════════════════"
     exit 0
@@ -166,7 +166,7 @@ if [[ -z "$address" ]]; then
     usage
 fi
 
-encoded_address=$(echo "$address" | jq -sRr @uri)
+encoded_address=$(echo "$address" | tr -d '\n' | jq -sRr @uri)
 url="$API_BASE/nearby?address=$encoded_address&radius=$radius"
 if [[ -n "$include_fire" ]]; then
     url="$url&fire=true"
@@ -178,8 +178,6 @@ if echo "$response" | jq -e '.error' > /dev/null 2>&1; then
     exit 1
 fi
 
-home_lat=$(echo "$response" | jq -r '.coordinates.lat')
-home_lng=$(echo "$response" | jq -r '.coordinates.lng')
 count=$(echo "$response" | jq -r '.count')
 
 echo ""
@@ -198,6 +196,6 @@ fi
 
 for i in $(seq 0 $((count - 1))); do
     item=$(echo "$response" | jq ".dispatches[$i]")
-    print_dispatch "$item" "$home_lat" "$home_lng"
+    print_dispatch "$item" "$address"
 done
 echo "═══════════════════════════════════════════════════════"
