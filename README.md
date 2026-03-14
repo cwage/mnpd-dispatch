@@ -44,22 +44,26 @@ Options:
 
 Output includes incident type, address, area, time received, distance from your search address, and a Google Maps directions link.
 
-## API Endpoints
+## Example Output
 
-The API runs on port 5001 by default.
+```
+═══════════════════════════════════════════════════════
+  DISPATCHES NEAR: 600 Broadway, Nashville, TN
+  Radius: 3 mi | Found: 2
+═══════════════════════════════════════════════════════
+───────────────────────────────────────────────────────
+  MNPD                 SHOTS FIRED
+  Code:                83P
 
-| Endpoint | Description |
-|---|---|
-| `GET /nearby?address=<addr>&radius=<miles>&fire=<bool>` | Dispatches near an address |
-| `GET /dispatches` | All active MNPD police dispatches |
-| `GET /dispatches/fire` | All active NFD fire dispatches |
-| `GET /dispatches/all` | All active dispatches (police + fire) |
-| `GET /health` | Health check |
+  Address:          2009 SEVIER ST
+  Area:             SHELBY PARK
 
-### Example
+  Received:         2026-03-14 06:05:03 PM CDT (20m ago)
 
-```bash
-curl -s 'http://localhost:5001/nearby?address=600+Broadway,+Nashville,+TN&radius=3' | python3 -m json.tool
+  Distance:         2.43 miles
+  Map:              https://www.google.com/maps/dir/...
+
+═══════════════════════════════════════════════════════
 ```
 
 ## Data Sources
