@@ -1,0 +1,8 @@
+services:
+  api:
+    build: .
+    ports:
+      - "5001:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    user: "${UID:-1000}:${GID:-1000}"
